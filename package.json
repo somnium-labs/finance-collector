@@ -4,10 +4,12 @@
     "main": "index.js",
     "scripts": {
         "build": "cross-env NODE_ENV=production CONFIG=local webpack",
+        "start": "node ./dist/index.js",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "dependencies": {
         "@types/cheerio": "^0.22.21",
+        "argparse": "^1.0.10",
         "axios": "^0.19.2",
         "cheerio": "^1.0.0-rc.3",
         "cors": "^2.8.5",
@@ -15,11 +17,14 @@
         "iconv-lite": "^0.6.2",
         "lodash": "^4.17.15",
         "moment": "^2.26.0",
+        "mysql2": "^2.1.0",
         "node-cron": "^2.0.3",
         "numeral": "^2.0.6",
-        "sequelize": "^5.21.12"
+        "sequelize": "^5.21.12",
+        "sequelize-cli-typescript": "^3.2.0-c"
     },
     "devDependencies": {
+        "@types/argparse": "^1.0.38",
         "@types/bluebird": "^3.5.32",
         "@types/chai": "^4.2.11",
         "@types/lodash": "^4.14.155",

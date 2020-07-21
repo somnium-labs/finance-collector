@@ -27,6 +27,7 @@ class SequelizeClient {
                 username: config.database.user,
                 password: config.database.password,
                 timezone: config.database.timezone,
+                logging: config.database.logging,
             });
 
             this.sequelize.addModels([Universe, Ohlc]);
@@ -34,7 +35,7 @@ class SequelizeClient {
             await this.sequelize.authenticate();
             console.log(`connected to db: ${config.database.host}`);
             if (config.database.sync) {
-                this.sequelize.sync({ alter: config.database.alter });
+                await this.sequelize.sync({ alter: config.database.alter });
             }
         } catch (err) {
             console.error(err);

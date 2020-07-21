@@ -1,33 +1,38 @@
-import { Table, Column, Model, DataType } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, Default } from 'sequelize-typescript';
 import MarketType from '@/classfication/marketType';
 
 @Table({
     tableName: 'universe',
     underscored: true,
+    timestamps: false, // Do not create createdAt, UpdatedAt
     indexes: [
         { unique: true, fields: ['code'] },
         { unique: true, fields: ['name'] },
         { unique: false, fields: ['sector'] },
         { unique: false, fields: ['market_type'] },
         { unique: false, fields: ['listing_date'] },
+        { unique: false, fields: ['delisted'] },
     ],
 })
 export default class Universe extends Model<Universe> {
     @Column
-    private code: string;
+    public code: string;
 
     @Column(DataType.ENUM(MarketType.Kosdaq, MarketType.Kospi))
-    private marketType: MarketType;
+    public marketType: MarketType;
 
     @Column
-    private name: string;
+    public name: string;
 
     @Column
-    private sector: string;
+    public sector: string;
 
     @Column
-    private product: string;
+    public product: string;
 
     @Column(DataType.DATEONLY)
-    private listingDate: Date;
+    public listingDate: Date;
+
+    @Column(DataType.BOOLEAN)
+    public delisted: boolean = false;
 }

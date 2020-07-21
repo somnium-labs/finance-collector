@@ -3,6 +3,7 @@ import { Table, Column, Model, DataType, PrimaryKey } from 'sequelize-typescript
 @Table({
     tableName: 'daily_price',
     underscored: true,
+    timestamps: false, // Do not create createdAt, UpdatedAt
     indexes: [
         { name: 'open_index', unique: false, fields: ['open'] },
         { name: 'high_index', unique: false, fields: ['high'] },
@@ -14,24 +15,24 @@ import { Table, Column, Model, DataType, PrimaryKey } from 'sequelize-typescript
 export default class DailyPrice extends Model<DailyPrice> {
     @PrimaryKey
     @Column
-    private code!: string;
+    public code: string;
 
     @PrimaryKey
-    @Column(DataType.DATE)
-    private date!: Date;
+    @Column(DataType.DATEONLY)
+    public date: Date;
 
     @Column(DataType.INTEGER)
-    private open: number;
+    public open: number;
 
     @Column(DataType.INTEGER)
-    private high: number;
+    public high: number;
 
     @Column(DataType.INTEGER)
-    private low: number;
+    public low: number;
 
     @Column(DataType.INTEGER)
-    private close: number;
+    public close: number;
 
     @Column(DataType.BIGINT)
-    private volume: number;
+    public volume: number;
 }
