@@ -12,23 +12,20 @@ import _ from 'lodash';
             description: 'example',
         });
 
-        parser.addArgument(['-b', '--begin'], {
+        parser.addArgument(['--init'], {
             required: false,
+            nargs: 0,
             help: 'begin date',
         });
 
-        parser.addArgument(['-e', '--end'], {
-            required: false,
-            help: 'end date',
-        });
-
         const args = parser.parseArgs();
-        console.log(args);
 
         await sequelize.initialize();
 
-        const codes = await KindCollector.updateCorpList();
-        await NaverFinanceCollector.updateDailyPrice(_.sortBy(codes, (x) => x, 'asc'));
+        if (!args.init) {
+            const codes = await KindCollector.updateCorpList();
+            await NaverFinanceCollector.updateDailyPrice(_.sortBy(codes, (x) => x, 'asc'));
+        }
     } catch (e) {
         console.log(e);
     }
