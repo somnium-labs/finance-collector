@@ -16,16 +16,36 @@ class NaverFinanceCollector {
 
     private static instance: NaverFinanceCollector;
     private static readonly BASE_URL = 'https://fchart.stock.naver.com';
-    private static readonly FIRST_DATE = moment('19900103', 'YYYYMMDD');
 
     public async updateDailyPrice(codes: string[]) {
         for (const code of codes) {
+            const completed = await this.tryUpdate(code);
+            if (!completed) {
+                await this.tryUpdate(code);
+            }
+            process.stdout.write(`complete: ${code}\r`);
+        }
+    }
+
+    private async getDailyPrice(code: string, count: number) {
+        const url = `${NaverFinanceCollector.BASE_URL}/sise.nhn?symbol=${code}&timeframe=day&count=${count}&requestType=0`;
+        try {
+            const response = await axios.get(url, { responseType: 'arraybuffer' });
+            return iconv.decode(Buffer.from(response.data), 'euc-kr');
+        } catch (error) {
+            console.error(Object.keys(error), error.message);
+        }
+    }
+
+    private async tryUpdate(code: string) {
+        return new Promise<boolean>(async (resolve) => {
             const latest = await DailyPrice.findOne({
                 where: { code: code },
                 order: [['date', 'DESC']],
                 limit: 1,
             });
 
+            // 필요한 거래일 계산
             const day = latest
                 ? util.calculateBusinessDays(
                       moment(latest.date),
@@ -33,13 +53,15 @@ class NaverFinanceCollector {
                   )
                 : util.calculateBusinessDays(moment('1990-01-03', 'YYYY-MM-DD'), moment());
 
+            let changed!: Promise<number>;
+
             if (0 < day) {
                 const dailyPrice: DailyPrice[] = [];
-                const xml = await this.getDailyPrice(code, day);
+                const xml = await this.getDailyPrice(code, day + 1);
+                await util.delay(100);
                 if (xml) {
                     const $ = cheerio.load(xml, { xmlMode: true });
-                    const item = $('item');
-                    item.each(async (index, element) => {
+                    $('item').each((index, element) => {
                         const data = $(element).attr('data');
                         const splitting = data?.split('|');
                         if (splitting) {
@@ -53,27 +75,44 @@ class NaverFinanceCollector {
                                 volume: parseInt(splitting[5], 10),
                             });
 
-                            dailyPrice.push(ohlcv);
+                            // 증자/감자 액면분할/액면병합 발생
+                            if (latest && index === 0) {
+                                if (
+                                    latest.open !== ohlcv.open ||
+                                    latest.high !== ohlcv.high ||
+                                    latest.low !== ohlcv.low ||
+                                    latest.close !== ohlcv.close
+                                ) {
+                                    // 새로운 수정주가를 저장하기 전에 기존 데이터를 삭제
+                                    changed = DailyPrice.destroy({
+                                        where: {
+                                            code: code,
+                                        },
+                                    });
+
+                                    return false; // === break
+                                }
+                            } else {
+                                dailyPrice.push(ohlcv);
+                            }
                         }
                     });
 
-                    console.log(`[${moment().format('HH:mm:ss')}] get => code: ${code} count: ${item.length}`);
-                    DailyPrice.bulkCreate(dailyPrice.map((u) => JSON.parse(JSON.stringify(u)))).then(() => {
-                        console.log(`[${moment().format('HH:mm:ss')}] completed => code: ${code}`);
-                    });
+                    if (0 < dailyPrice.length) {
+                        DailyPrice.bulkCreate(dailyPrice.map((u) => JSON.parse(JSON.stringify(u)))).then(() => {
+                            console.log(`[${moment().format('HH:mm:ss')}] completed => code: ${code}`);
+                        });
+                    }
                 }
             }
-        }
-    }
 
-    private async getDailyPrice(code: string, count: number) {
-        const url = `${NaverFinanceCollector.BASE_URL}/sise.nhn?symbol=${code}&timeframe=day&count=${count}&requestType=0`;
-        try {
-            const response = await axios.get(url, { responseType: 'arraybuffer' });
-            return iconv.decode(Buffer.from(response.data), 'euc-kr');
-        } catch (error) {
-            console.error(Object.keys(error), error.message);
-        }
+            if (changed) {
+                await changed;
+                resolve(false); // 시세정보 재요청
+            } else {
+                resolve(true);
+            }
+        });
     }
 }
 

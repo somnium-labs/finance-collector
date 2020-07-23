@@ -4,10 +4,13 @@ import KindCollector from '@/provider/kind';
 import NaverFinanceCollector from '@/provider/naver';
 import _ from 'lodash';
 import cron from 'node-cron';
+import moment from 'moment';
 
 async function update() {
+    console.log(`[${moment().format('HH:mm:ss')}] Start the update.`);
     const codes = await KindCollector.updateCorpList();
     await NaverFinanceCollector.updateDailyPrice(_.sortBy(codes, (x) => x, 'asc'));
+    console.log(`[${moment().format('HH:mm:ss')}] Update completed.`);
 }
 
 (async () => {
