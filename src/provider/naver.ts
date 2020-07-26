@@ -45,12 +45,8 @@ class NaverFinanceCollector {
                 limit: 1,
             });
 
-            // 필요한 거래일 계산
-            const day = latest
-                ? util.calculateBusinessDays(
-                      moment(latest.date),
-                      moment().isAfter(moment().format('YYYY-MM-DD 16:00:00')) ? moment() : moment().add(-1, 'day'),
-                  )
+            const day = latest // 필요한 거래일 계산
+                ? util.calculateBusinessDays(moment(latest.date).add(1, 'day'), moment().isAfter(moment().format('YYYY-MM-DD 16:00:00')) ? moment().add(1, 'day') : moment())
                 : util.calculateBusinessDays(moment('1990-01-03', 'YYYY-MM-DD'), moment());
 
             let changed!: Promise<number>;
@@ -77,12 +73,7 @@ class NaverFinanceCollector {
 
                             // 증자/감자 액면분할/액면병합 발생
                             if (latest && index === 0) {
-                                if (
-                                    latest.open !== ohlcv.open ||
-                                    latest.high !== ohlcv.high ||
-                                    latest.low !== ohlcv.low ||
-                                    latest.close !== ohlcv.close
-                                ) {
+                                if (latest.open !== ohlcv.open || latest.high !== ohlcv.high || latest.low !== ohlcv.low || latest.close !== ohlcv.close) {
                                     // 새로운 수정주가를 저장하기 전에 기존 데이터를 삭제
                                     changed = DailyPrice.destroy({
                                         where: {
@@ -99,9 +90,13 @@ class NaverFinanceCollector {
                     });
 
                     if (0 < dailyPrice.length) {
-                        DailyPrice.bulkCreate(dailyPrice.map((u) => JSON.parse(JSON.stringify(u)))).then(() => {
-                            console.log(`[${moment().format('HH:mm:ss')}] completed => code: ${code}`);
-                        });
+                        DailyPrice.bulkCreate(dailyPrice.map((u) => JSON.parse(JSON.stringify(u))))
+                            .then(() => {
+                                console.log(`[${moment().format('HH:mm:ss')}] completed => code: ${code}`);
+                            })
+                            .catch((error) => {
+                                console.log(`failed => code: ${code}, error: ${error}`);
+                            });
                     }
                 }
             }
