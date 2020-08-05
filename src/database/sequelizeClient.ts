@@ -2,6 +2,7 @@ import { Sequelize } from 'sequelize-typescript';
 import { config } from '@/config';
 import Universe from '@/database/models/universe';
 import Ohlc from '@/database/models/dailyPrice';
+import IncomeStatement from '@/database/models/incomeStatement';
 
 class SequelizeClient {
     public static create() {
@@ -30,7 +31,7 @@ class SequelizeClient {
                 logging: config.database.logging,
             });
 
-            this.sequelize.addModels([Universe, Ohlc]);
+            this.sequelize.addModels([Universe, Ohlc, IncomeStatement]);
 
             await this.sequelize.authenticate();
             console.log(`connected to db: ${config.database.host}`);
