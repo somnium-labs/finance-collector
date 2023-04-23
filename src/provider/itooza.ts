@@ -1,8 +1,8 @@
+import puppeteer, { Page } from 'puppeteer';
+
+import IncomeStatement from '@/database/models/incomeStatement';
 import cheerio from 'cheerio';
 import moment from 'moment';
-import _ from 'lodash';
-import puppeteer from 'puppeteer';
-import IncomeStatement from '@/database/models/incomeStatement';
 
 class ItoozaCollector {
     public static create() {
@@ -21,14 +21,20 @@ class ItoozaCollector {
         await page.goto('https://login.itooza.com/login.htm');
         await page.evaluate(
             (id, pw) => {
-                (document.querySelector('#txtUserId') as HTMLInputElement).value = id;
-                (document.querySelector('#txtPassword') as HTMLInputElement).value = pw;
+                (
+                    document.querySelector('#txtUserId') as HTMLInputElement
+                ).value = id;
+                (
+                    document.querySelector('#txtPassword') as HTMLInputElement
+                ).value = pw;
             },
             'acepm83',
             'qq0920pp',
         );
 
-        await page.click('#login-container-01 > div.boxBody > div.leftCol > div.login-box-wrap > div.btn-login > input[type=image]');
+        await page.click(
+            '#login-container-01 > div.boxBody > div.leftCol > div.login-box-wrap > div.btn-login > input[type=image]',
+        );
         await page.waitForNavigation();
 
         for (const stockCode of stockCodes) {
@@ -37,7 +43,11 @@ class ItoozaCollector {
         }
     }
 
-    private async updateIncomStatement(page: puppeteer.Page, stockCode: string, mode: string) {
+    private async updateIncomStatement(
+        page: Page,
+        stockCode: string,
+        mode: string,
+    ) {
         const accmode = 1; // 1: ifrs 2: gaap
         const lsmode = 2; // order by date asc
         const lkmode = 1; // 1:연결 2:개별
@@ -58,7 +68,13 @@ class ItoozaCollector {
                 .find('th span')
                 .each((i, e) => {
                     const date = $(e).text();
-                    incomeStatements.push(new IncomeStatement({ code: stockCode, date: date, unitPeriod: unitPeriod }));
+                    incomeStatements.push(
+                        new IncomeStatement({
+                            code: stockCode,
+                            unitPeriod: unitPeriod,
+                            date: date,
+                        }),
+                    );
                 });
 
             // 매출액
@@ -67,7 +83,10 @@ class ItoozaCollector {
                 .each((i, e) => {
                     const sales = $(e).text();
                     if (sales !== 'N/A') {
-                        incomeStatements[i].sales = parseInt(sales.replace(',', ''), 10);
+                        incomeStatements[i].sales = parseInt(
+                            sales.replace(',', ''),
+                            10,
+                        );
                     }
                 });
 
@@ -77,7 +96,10 @@ class ItoozaCollector {
                 .each((i, e) => {
                     const sales = $(e).text();
                     if (sales !== 'N/A') {
-                        incomeStatements[i].costOfSales = parseInt(sales.replace(',', ''), 10);
+                        incomeStatements[i].costOfSales = parseInt(
+                            sales.replace(',', ''),
+                            10,
+                        );
                     }
                 });
 
@@ -87,7 +109,10 @@ class ItoozaCollector {
                 .each((i, e) => {
                     const sales = $(e).text();
                     if (sales !== 'N/A') {
-                        incomeStatements[i].grossProfit = parseInt(sales.replace(',', ''), 10);
+                        incomeStatements[i].grossProfit = parseInt(
+                            sales.replace(',', ''),
+                            10,
+                        );
                     }
                 });
 
@@ -97,7 +122,8 @@ class ItoozaCollector {
                 .each((i, e) => {
                     const sales = $(e).text();
                     if (sales !== 'N/A') {
-                        incomeStatements[i].sellingAndAdministrativeExpenses = parseInt(sales.replace(',', ''), 10);
+                        incomeStatements[i].sellingAndAdministrativeExpenses =
+                            parseInt(sales.replace(',', ''), 10);
                     }
                 });
 
@@ -107,7 +133,10 @@ class ItoozaCollector {
                 .each((i, e) => {
                     const sales = $(e).text();
                     if (sales !== 'N/A') {
-                        incomeStatements[i].operatingIncome = parseInt(sales.replace(',', ''), 10);
+                        incomeStatements[i].operatingIncome = parseInt(
+                            sales.replace(',', ''),
+                            10,
+                        );
                     }
                 });
 
@@ -117,7 +146,12 @@ class ItoozaCollector {
                 .each((i, e) => {
                     const sales = $(e).text();
                     if (sales !== 'N/A') {
-                        incomeStatements[i].continuingOperationsIncomeBeforeIncomeTax = parseInt(sales.replace(',', ''), 10);
+                        incomeStatements[
+                            i
+                        ].continuingOperationsIncomeBeforeIncomeTax = parseInt(
+                            sales.replace(',', ''),
+                            10,
+                        );
                     }
                 });
 
@@ -127,7 +161,10 @@ class ItoozaCollector {
                 .each((i, e) => {
                     const sales = $(e).text();
                     if (sales !== 'N/A') {
-                        incomeStatements[i].netIncome = parseInt(sales.replace(',', ''), 10);
+                        incomeStatements[i].netIncome = parseInt(
+                            sales.replace(',', ''),
+                            10,
+                        );
                     }
                 });
 
@@ -137,7 +174,10 @@ class ItoozaCollector {
                 .each((i, e) => {
                     const sales = $(e).text();
                     if (sales !== 'N/A') {
-                        incomeStatements[i].controllingInterest = parseInt(sales.replace(',', ''), 10);
+                        incomeStatements[i].controllingInterest = parseInt(
+                            sales.replace(',', ''),
+                            10,
+                        );
                     }
                 });
 
@@ -147,7 +187,10 @@ class ItoozaCollector {
                 .each((i, e) => {
                     const sales = $(e).text();
                     if (sales !== 'N/A') {
-                        incomeStatements[i].nonControllingInterest = parseInt(sales.replace(',', ''), 10);
+                        incomeStatements[i].nonControllingInterest = parseInt(
+                            sales.replace(',', ''),
+                            10,
+                        );
                     }
                 });
 
@@ -157,7 +200,10 @@ class ItoozaCollector {
                 .each((i, e) => {
                     const sales = $(e).text();
                     if (sales !== 'N/A') {
-                        incomeStatements[i].EPS = parseInt(sales.replace(',', ''), 10);
+                        incomeStatements[i].EPS = parseInt(
+                            sales.replace(',', ''),
+                            10,
+                        );
                     }
                 });
 
@@ -167,7 +213,10 @@ class ItoozaCollector {
                 .each((i, e) => {
                     const sales = $(e).text();
                     if (sales !== 'N/A') {
-                        incomeStatements[i].EBITDA = parseInt(sales.replace(',', ''), 10);
+                        incomeStatements[i].EBITDA = parseInt(
+                            sales.replace(',', ''),
+                            10,
+                        );
                     }
                 });
 
@@ -177,7 +226,10 @@ class ItoozaCollector {
                 .each((i, e) => {
                     const sales = $(e).text();
                     if (sales !== 'N/A') {
-                        incomeStatements[i].stockPrice = parseInt(sales.replace(',', ''), 10);
+                        incomeStatements[i].stockPrice = parseInt(
+                            sales.replace(',', ''),
+                            10,
+                        );
                     }
                 });
 
@@ -187,7 +239,10 @@ class ItoozaCollector {
                 .each((i, e) => {
                     const sales = $(e).text();
                     if (sales !== 'N/A') {
-                        incomeStatements[i].marketCap = parseInt(sales.replace(',', ''), 10);
+                        incomeStatements[i].marketCap = parseInt(
+                            sales.replace(',', ''),
+                            10,
+                        );
                     }
                 });
 
@@ -197,7 +252,9 @@ class ItoozaCollector {
                 .each((i, e) => {
                     const sales = $(e).text();
                     if (sales !== 'N/A') {
-                        incomeStatements[i].PER = parseFloat(sales.replace(',', ''));
+                        incomeStatements[i].PER = parseFloat(
+                            sales.replace(',', ''),
+                        );
                     }
                 });
 
@@ -207,12 +264,20 @@ class ItoozaCollector {
                 .each((i, e) => {
                     const sales = $(e).text();
                     if (sales !== 'N/A') {
-                        incomeStatements[i].DPS = parseFloat(sales.replace(',', ''));
+                        incomeStatements[i].DPS = parseFloat(
+                            sales.replace(',', ''),
+                        );
                     }
                 });
 
-            IncomeStatement.bulkCreate(incomeStatements.map((u) => JSON.parse(JSON.stringify(u)))).then(() => {
-                console.log(`[${moment().format('HH:mm:ss')}] Incom statement(${unitPeriod}) completed => code: ${stockCode}`);
+            IncomeStatement.bulkCreate(
+                incomeStatements.map((u) => JSON.parse(JSON.stringify(u))),
+            ).then(() => {
+                console.log(
+                    `[${moment().format(
+                        'HH:mm:ss',
+                    )}] Incom statement(${unitPeriod}) completed => code: ${stockCode}`,
+                );
             });
         }
     }

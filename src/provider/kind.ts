@@ -1,10 +1,10 @@
-import cheerio from 'cheerio';
-import axios from '@/axiosClient';
 import MarketType from '@/classfication/marketType';
-import iconv from 'iconv-lite';
-import moment from 'moment';
 import Universe from '@/database/models/universe';
 import _ from 'lodash';
+import axios from '@/axiosClient';
+import cheerio from 'cheerio';
+import iconv from 'iconv-lite';
+import moment from 'moment';
 
 class KindCollector {
     public static create() {
@@ -32,7 +32,10 @@ class KindCollector {
         const delisting: Universe[] = [];
 
         // 코스피 상장법인
-        const kospiList = await this.downloadCorpListByMarketType(MarketType.Kospi, '13');
+        const kospiList = await this.downloadCorpListByMarketType(
+            MarketType.Kospi,
+            '13',
+        );
         if (kospiList) {
             kospiList.forEach((x) => {
                 listing.push(x);
@@ -40,7 +43,10 @@ class KindCollector {
         }
 
         // 코스닥 상장법인
-        const kosdaqList = await this.downloadCorpListByMarketType(MarketType.Kosdaq, '13');
+        const kosdaqList = await this.downloadCorpListByMarketType(
+            MarketType.Kosdaq,
+            '13',
+        );
         if (kosdaqList) {
             kosdaqList.forEach((x) => {
                 listing.push(x);
@@ -48,7 +54,10 @@ class KindCollector {
         }
 
         // 코스피 상폐법인
-        const kospiDelist = await this.downloadCorpListByMarketType(MarketType.Kospi, '01');
+        const kospiDelist = await this.downloadCorpListByMarketType(
+            MarketType.Kospi,
+            '01',
+        );
         if (kospiDelist) {
             kospiDelist.forEach((x) => {
                 if (!_.find(listing, { code: x.code })) {
@@ -58,7 +67,10 @@ class KindCollector {
         }
 
         // 코스닥 상폐법인
-        const kosdaqDelist = await this.downloadCorpListByMarketType(MarketType.Kosdaq, '01');
+        const kosdaqDelist = await this.downloadCorpListByMarketType(
+            MarketType.Kosdaq,
+            '01',
+        );
         if (kosdaqDelist) {
             kosdaqDelist.forEach((x) => {
                 if (!_.find(listing, { code: x.code })) {
@@ -70,7 +82,9 @@ class KindCollector {
         // 신규상장 업데이트
         const newListing = _.differenceBy(listing, this.universe, 'code');
         if (0 < newListing.length) {
-            await Universe.bulkCreate(newListing.map((u) => JSON.parse(JSON.stringify(u))));
+            await Universe.bulkCreate(
+                newListing.map((u) => JSON.parse(JSON.stringify(u))),
+            );
         }
 
         // 상장폐지 업데이트
@@ -90,7 +104,10 @@ class KindCollector {
         return listing.map((x) => x.code);
     }
 
-    private async downloadCorpListByMarketType(marketType: MarketType, searchType: string) {
+    private async downloadCorpListByMarketType(
+        marketType: MarketType,
+        searchType: string,
+    ) {
         try {
             const html = await this.downloadCorpList(marketType, searchType);
             const $ = cheerio.load(html);
@@ -105,7 +122,10 @@ class KindCollector {
                         code: $(columns[1]).text(),
                         sector: $(columns[2]).text(),
                         product: $(columns[3]).text(),
-                        listingDate: moment($(columns[4]).text(), 'YYYY-MM-DD').toDate(),
+                        listingDate: moment(
+                            $(columns[4]).text(),
+                            'YYYY-MM-DD',
+                        ).toDate(),
                     });
 
                     universe.push(stock);
@@ -124,11 +144,14 @@ class KindCollector {
      */
     private async downloadCorpList(marketType: MarketType, searchType: string) {
         try {
-            const market = marketType === MarketType.Kosdaq ? 'kosdaqMkt' : 'stockMkt';
+            const market =
+                marketType === MarketType.Kosdaq ? 'kosdaqMkt' : 'stockMkt';
             const url = `${KindCollector.BASE_URL}/corpgeneral/corpList.do?method=download&searchType=${searchType}&marketType=${market}`;
-            const response = await axios.get(url, { responseType: 'arraybuffer' });
+            const response = await axios.get(url, {
+                responseType: 'arraybuffer',
+            });
             return iconv.decode(Buffer.from(response.data), 'euc-kr');
-        } catch (error) {
+        } catch (error: any) {
             console.error(Object.keys(error), error.message);
             throw error;
         }

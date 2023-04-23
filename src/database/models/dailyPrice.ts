@@ -1,4 +1,10 @@
-import { Table, Column, Model, DataType, PrimaryKey } from 'sequelize-typescript';
+import {
+    Column,
+    DataType,
+    Model,
+    PrimaryKey,
+    Table,
+} from 'sequelize-typescript';
 
 @Table({
     tableName: 'daily_price',
@@ -12,7 +18,7 @@ import { Table, Column, Model, DataType, PrimaryKey } from 'sequelize-typescript
         { name: 'volume_index', unique: false, fields: ['volume'] },
     ],
 })
-export default class DailyPrice extends Model<DailyPrice> {
+export default class DailyPrice extends Model {
     @PrimaryKey
     @Column
     public code: string;

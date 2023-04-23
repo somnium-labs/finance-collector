@@ -1,4 +1,5 @@
-import { Table, Column, Model, DataType, Default } from 'sequelize-typescript';
+import { Column, DataType, Model, Table } from 'sequelize-typescript';
+
 import MarketType from '@/classfication/marketType';
 
 @Table({
@@ -14,7 +15,7 @@ import MarketType from '@/classfication/marketType';
         { unique: false, fields: ['delisted'] },
     ],
 })
-export default class Universe extends Model<Universe> {
+export default class Universe extends Model {
     @Column
     public code: string;
 

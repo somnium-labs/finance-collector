@@ -1,11 +1,12 @@
-import sequelize from '@/database/sequelizeClient';
 import * as argparse from 'argparse';
+
+import ItoozaCollector from '@/provider/itooza';
 import KindCollector from '@/provider/kind';
 import NaverFinanceCollector from '@/provider/naver';
-import ItoozaCollector from '@/provider/itooza';
 import _ from 'lodash';
 import cron from 'node-cron';
 import moment from 'moment';
+import sequelize from '@/database/sequelizeClient';
 
 async function update(fs: boolean) {
     console.log(`[${moment().format('HH:mm:ss')}] Start the update.`);
@@ -26,24 +27,23 @@ async function update(fs: boolean) {
 (async () => {
     try {
         const parser = new argparse.ArgumentParser({
-            version: '0.0.1',
-            addHelp: true,
+            add_help: true,
             description: 'Finance Collector',
         });
 
-        parser.addArgument(['--init'], {
+        parser.add_argument('--init', {
             required: false,
-            nargs: 0,
+            action: 'store_true',
             help: 'Initialize only the database.',
         });
 
-        parser.addArgument(['--fs'], {
+        parser.add_argument('--fs', {
             required: false,
-            nargs: 0,
+            action: 'store_true',
             help: 'Financial Statement Update.',
         });
 
-        const args = parser.parseArgs();
+        const args = parser.parse_args();
 
         await sequelize.initialize();
 

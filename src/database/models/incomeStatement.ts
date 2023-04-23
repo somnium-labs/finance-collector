@@ -1,4 +1,10 @@
-import { Table, Column, Model, DataType, PrimaryKey } from 'sequelize-typescript';
+import {
+    Column,
+    DataType,
+    Model,
+    PrimaryKey,
+    Table,
+} from 'sequelize-typescript';
 
 /**
  * *손익계산서(연결)
@@ -8,7 +14,7 @@ import { Table, Column, Model, DataType, PrimaryKey } from 'sequelize-typescript
     underscored: true,
     timestamps: false, // Do not create createdAt, UpdatedAt
 })
-export default class IncomeStatement extends Model<IncomeStatement> {
+export default class IncomeStatement extends Model {
     @PrimaryKey
     @Column
     public code: string;

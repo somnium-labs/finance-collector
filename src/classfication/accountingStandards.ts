@@ -3,4 +3,4 @@ enum AccountingStandards {
     GAAP = 'GAAP', // 일반회계
 }
 
-export default MarketType;
+export default AccountingStandards;

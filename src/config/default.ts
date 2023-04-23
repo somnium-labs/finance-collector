@@ -6,7 +6,7 @@ const config = {
         user: 'finance',
         password: 'finance',
         timezone: '+00:00',
-        sync: false, // create table if not exists
+        sync: true, // create table if not exists
         alter: false, // alter table
         logging: false,
     },
